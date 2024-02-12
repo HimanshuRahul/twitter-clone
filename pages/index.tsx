@@ -10,6 +10,7 @@ import { TbClipboardText } from "react-icons/tb";
 import { BsPeople } from "react-icons/bs";
 import { FaRegUser } from "react-icons/fa6";
 import { CgMoreO } from "react-icons/cg";
+import { FaRegImage } from "react-icons/fa6";
 import FeedCard from "@/components/FeedCard";
 import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
 import toast from "react-hot-toast";
@@ -40,6 +41,13 @@ export default function Home() {
   const { user } = useCurrentUser();
 
   const queryClient = useQueryClient();
+
+  const handleSelectImage = useCallback(() => {
+    const input = document.createElement("input");
+    input.setAttribute("type", "file");
+    input.setAttribute("accept", "image/*");
+    input.click();
+  }, []);
 
   const handleLoginWithGoogle = useCallback(
     async (cred: CredentialResponse) => {
@@ -107,6 +115,39 @@ export default function Home() {
           )}
         </div>
         <div className="col-span-5 border-r border-l border-gray-700 -ml-12">
+          <div>
+            <div className="border border-l-0 border-r-0 border-b-0 border-gray-700 p-5 hover:bg-slate-900 cursor-pointer transition-all ">
+              <div className="grid grid-cols-12 gap-3">
+                <div className="col-span-1">
+                  {user?.profileImageUrl && (
+                    <Image
+                      className="rounded-full m-2"
+                      src={user?.profileImageUrl}
+                      alt="user-image"
+                      width={50}
+                      height={50}
+                    />
+                  )}
+                </div>
+                <div className="col-span-11">
+                  <textarea
+                    className="w-full bg-transparent text-xl p-2 border-b border-slate-700 "
+                    placeholder="What is happening?!"
+                    rows={2}
+                  ></textarea>
+                  <div className="mt-4 flex justify-between items-center m-4">
+                    <FaRegImage
+                      onClick={handleSelectImage}
+                      className="text-lg hover:cursor-pointer"
+                    />
+                    <button className="bg-[#1d9bf0] py-2 px-2 rounded-full text-sm w-1/6 font-semibold hover:bg-[#1d9cf0e0]">
+                      Post
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <FeedCard />
           <FeedCard />
           <FeedCard />
