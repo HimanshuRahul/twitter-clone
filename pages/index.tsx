@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { BsTwitterX } from "react-icons/bs";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { GoHomeFill } from "react-icons/go";
 import { PiBell } from "react-icons/pi";
 import { LuSearch } from "react-icons/lu";
@@ -18,6 +18,8 @@ import { graphqlClient } from "@/clients/api";
 import { verifyUserGoogleTokenQuery } from "@/graphql/query/user";
 import { useCurrentUser } from "@/hooks/user";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCreateTweet, useGetAllTweets } from "@/hooks/tweet";
+import { Tweet } from "@/gql/graphql";
 
 interface TwitterSidebarButton {
   title: string;
@@ -40,7 +42,13 @@ const sidebarMenuItems: TwitterSidebarButton[] = [
 export default function Home() {
   const { user } = useCurrentUser();
 
+  const { tweets = [] } = useGetAllTweets();
+
+  const { mutate } = useCreateTweet();
+
   const queryClient = useQueryClient();
+
+  const [content, setContent] = useState("");
 
   const handleSelectImage = useCallback(() => {
     const input = document.createElement("input");
@@ -48,6 +56,12 @@ export default function Home() {
     input.setAttribute("accept", "image/*");
     input.click();
   }, []);
+
+  const handleCreateTweet = useCallback(() => {
+    mutate({
+      content,
+    });
+  }, [content, mutate]);
 
   const handleLoginWithGoogle = useCallback(
     async (cred: CredentialResponse) => {
@@ -98,10 +112,10 @@ export default function Home() {
           </div>
           {user && (
             <div className="absolute bottom-1 flex gap-2 items-center p-2 rounded-full hover:bg-gray-900 cursor-pointer transition-all">
-              {user && user.profileImageUrl && (
+              {user && user.profileImageURL && (
                 <Image
                   className="rounded-full"
-                  src={user?.profileImageUrl}
+                  src={user?.profileImageURL}
                   alt="user-image"
                   height={50}
                   width={50}
@@ -119,10 +133,10 @@ export default function Home() {
             <div className="border border-l-0 border-r-0 border-b-0 border-gray-700 p-5 hover:bg-slate-900 cursor-pointer transition-all ">
               <div className="grid grid-cols-12 gap-3">
                 <div className="col-span-1">
-                  {user?.profileImageUrl && (
+                  {user?.profileImageURL && (
                     <Image
                       className="rounded-full m-2"
-                      src={user?.profileImageUrl}
+                      src={user?.profileImageURL}
                       alt="user-image"
                       width={50}
                       height={50}
@@ -131,6 +145,8 @@ export default function Home() {
                 </div>
                 <div className="col-span-11">
                   <textarea
+                    value={content}
+                    onChange={(e) => setContent(e.target.value)}
                     className="w-full bg-transparent text-xl p-2 border-b border-slate-700 "
                     placeholder="What is happening?!"
                     rows={2}
@@ -140,7 +156,10 @@ export default function Home() {
                       onClick={handleSelectImage}
                       className="text-lg hover:cursor-pointer"
                     />
-                    <button className="bg-[#1d9bf0] py-2 px-2 rounded-full text-sm w-1/6 font-semibold hover:bg-[#1d9cf0e0]">
+                    <button
+                      onClick={handleCreateTweet}
+                      className="bg-[#1d9bf0] py-2 px-2 rounded-full text-sm w-1/6 font-semibold hover:bg-[#1d9cf0e0]"
+                    >
                       Post
                     </button>
                   </div>
@@ -148,12 +167,9 @@ export default function Home() {
               </div>
             </div>
           </div>
-          <FeedCard />
-          <FeedCard />
-          <FeedCard />
-          <FeedCard />
-          <FeedCard />
-          <FeedCard />
+          {tweets?.map((tweet) =>
+            tweet ? <FeedCard key={tweet?.id} data={tweet as Tweet} /> : null
+          )}
         </div>
         <div className="col-span-3 p-4">
           {!user && (
