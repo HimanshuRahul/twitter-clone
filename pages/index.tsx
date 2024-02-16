@@ -1,43 +1,12 @@
 import Image from "next/image";
-import { BsTwitterX } from "react-icons/bs";
 import React, { useCallback, useState } from "react";
-import { GoHomeFill } from "react-icons/go";
-import { PiBell } from "react-icons/pi";
-import { LuSearch } from "react-icons/lu";
-import { FaRegEnvelope } from "react-icons/fa6";
-import { RiSlashCommands2 } from "react-icons/ri";
-import { TbClipboardText } from "react-icons/tb";
-import { BsPeople } from "react-icons/bs";
-import { FaRegUser } from "react-icons/fa6";
-import { CgMoreO } from "react-icons/cg";
 import { FaRegImage } from "react-icons/fa6";
 import FeedCard from "@/components/FeedCard";
-import { CredentialResponse, GoogleLogin } from "@react-oauth/google";
-import toast from "react-hot-toast";
-import { graphqlClient } from "@/clients/api";
-import { verifyUserGoogleTokenQuery } from "@/graphql/query/user";
 import { useCurrentUser } from "@/hooks/user";
 import { useQueryClient } from "@tanstack/react-query";
 import { useCreateTweet, useGetAllTweets } from "@/hooks/tweet";
 import { Tweet } from "@/gql/graphql";
-
-interface TwitterSidebarButton {
-  title: string;
-  icon: React.ReactNode;
-}
-
-const sidebarMenuItems: TwitterSidebarButton[] = [
-  { title: "Home", icon: <GoHomeFill /> },
-  { title: "Explore", icon: <LuSearch /> },
-  { title: "Notifications", icon: <PiBell /> },
-  { title: "Messages", icon: <FaRegEnvelope /> },
-  { title: "Grok", icon: <RiSlashCommands2 /> },
-  { title: "Lists", icon: <TbClipboardText /> },
-  { title: "Communities", icon: <BsPeople /> },
-  { title: "Premium", icon: <BsTwitterX /> },
-  { title: "Profile", icon: <FaRegUser /> },
-  { title: "More", icon: <CgMoreO /> },
-];
+import TwitterLayout from "@/components/FeedCard/Layout/TwitterLayout";
 
 export default function Home() {
   const { user } = useCurrentUser();
@@ -45,8 +14,6 @@ export default function Home() {
   const { tweets = [] } = useGetAllTweets();
 
   const { mutate } = useCreateTweet();
-
-  const queryClient = useQueryClient();
 
   const [content, setContent] = useState("");
 
@@ -63,123 +30,51 @@ export default function Home() {
     });
   }, [content, mutate]);
 
-  const handleLoginWithGoogle = useCallback(
-    async (cred: CredentialResponse) => {
-      const googleToken = cred.credential;
-      if (!googleToken) return toast.error(`Google token not found`);
-
-      const { verifyGoogleToken } = await graphqlClient.request(
-        verifyUserGoogleTokenQuery,
-        { token: googleToken }
-      );
-
-      toast.success("Verified successfully");
-      console.log(verifyGoogleToken);
-
-      if (verifyGoogleToken) {
-        window.localStorage.setItem("__twitter_token", verifyGoogleToken);
-
-        //previously below code used to work like -> await queryClient.invalidateQueries(["current-user"]);
-
-        await queryClient.invalidateQueries({ queryKey: ["current-user"] });
-      }
-    },
-    [queryClient]
-  );
-
   return (
     <div>
-      <div className="grid grid-cols-12 h-screen w-screen px-32">
-        <div className="col-span-3 static">
-          <div className="text-3xl w-fit hover:bg-gray-900 p-3 rounded-full cursor-pointer transition-all">
-            <BsTwitterX />
-          </div>
-          <div className="text-xl">
-            <ul>
-              {sidebarMenuItems.map((item) => (
-                <li
-                  className="flex justify-start items-center gap-4 hover:bg-gray-900 rounded-full cursor-pointer py-2 pl-4 pr-8 w-fit mb-1"
-                  key={item.title}
-                >
-                  <span className="text-3xl">{item.icon}</span>
-                  <span>{item.title}</span>
-                </li>
-              ))}
-            </ul>
-            <button className="bg-[#1d9bf0] p-4 rounded-full w-9/12 mt-2 text-[16px] font-bold hover:bg-[#1d9cf0e0]">
-              Post
-            </button>
-          </div>
-          {user && (
-            <div className="absolute bottom-1 flex gap-2 items-center p-2 rounded-full hover:bg-gray-900 cursor-pointer transition-all">
-              {user && user.profileImageURL && (
-                <Image
-                  className="rounded-full"
-                  src={user?.profileImageURL}
-                  alt="user-image"
-                  height={50}
-                  width={50}
-                />
-              )}
-              <div className="flex">
-                <h3 className="text-xl">{user.firstName}</h3>
-                <h3 className="text-xl">{user.lastName}</h3>
+      <TwitterLayout>
+        <div>
+          <div className="border border-l-0 border-r-0 border-b-0 border-gray-700 p-5 hover:bg-slate-900 cursor-pointer transition-all ">
+            <div className="grid grid-cols-12 gap-3">
+              <div className="col-span-1">
+                {user?.profileImageURL && (
+                  <Image
+                    className="rounded-full m-2"
+                    src={user?.profileImageURL}
+                    alt="user-image"
+                    width={50}
+                    height={50}
+                  />
+                )}
               </div>
-            </div>
-          )}
-        </div>
-        <div className="col-span-5 border-r border-l border-gray-700 -ml-12">
-          <div>
-            <div className="border border-l-0 border-r-0 border-b-0 border-gray-700 p-5 hover:bg-slate-900 cursor-pointer transition-all ">
-              <div className="grid grid-cols-12 gap-3">
-                <div className="col-span-1">
-                  {user?.profileImageURL && (
-                    <Image
-                      className="rounded-full m-2"
-                      src={user?.profileImageURL}
-                      alt="user-image"
-                      width={50}
-                      height={50}
-                    />
-                  )}
-                </div>
-                <div className="col-span-11">
-                  <textarea
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                    className="w-full bg-transparent text-xl p-2 border-b border-slate-700 "
-                    placeholder="What is happening?!"
-                    rows={2}
-                  ></textarea>
-                  <div className="mt-4 flex justify-between items-center m-4">
-                    <FaRegImage
-                      onClick={handleSelectImage}
-                      className="text-lg hover:cursor-pointer"
-                    />
-                    <button
-                      onClick={handleCreateTweet}
-                      className="bg-[#1d9bf0] py-2 px-2 rounded-full text-sm w-1/6 font-semibold hover:bg-[#1d9cf0e0]"
-                    >
-                      Post
-                    </button>
-                  </div>
+              <div className="col-span-11">
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  className="w-full bg-transparent text-xl p-2 border-b border-slate-700 "
+                  placeholder="What is happening?!"
+                  rows={2}
+                ></textarea>
+                <div className="mt-4 flex justify-between items-center m-4">
+                  <FaRegImage
+                    onClick={handleSelectImage}
+                    className="text-lg hover:cursor-pointer"
+                  />
+                  <button
+                    onClick={handleCreateTweet}
+                    className="bg-[#1d9bf0] py-2 px-2 rounded-full text-sm w-1/6 font-semibold hover:bg-[#1d9cf0e0]"
+                  >
+                    Post
+                  </button>
                 </div>
               </div>
             </div>
           </div>
-          {tweets?.map((tweet) =>
-            tweet ? <FeedCard key={tweet?.id} data={tweet as Tweet} /> : null
-          )}
         </div>
-        <div className="col-span-3 p-4">
-          {!user && (
-            <div className="p-4 border rounded-lg ">
-              <h1 className="my-2 text-3xl font-bold">Join today.</h1>
-              <GoogleLogin onSuccess={handleLoginWithGoogle} />
-            </div>
-          )}
-        </div>
-      </div>
+        {tweets?.map((tweet) =>
+          tweet ? <FeedCard key={tweet?.id} data={tweet as Tweet} /> : null
+        )}
+      </TwitterLayout>
     </div>
   );
 }
