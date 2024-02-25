@@ -7,6 +7,7 @@ import { BiBarChart } from "react-icons/bi";
 import { FaRegBookmark } from "react-icons/fa";
 import { FiUpload } from "react-icons/fi";
 import { Tweet } from "@/gql/graphql";
+import Link from "next/link";
 
 interface FeedCardProps {
   data: Tweet;
@@ -30,9 +31,14 @@ const FeedCard: React.FC<FeedCardProps> = (props) => {
         </div>
         <div className="col-span-11">
           <h5 className="font-bold">
-            {data.author?.firstName} {data.author?.lastName}
+            <Link href={`/${data.author?.id}`}>
+              {data.author?.firstName} {data.author?.lastName}
+            </Link>
           </h5>
           <p>{data?.content}</p>
+          {data.imageURL && (
+            <Image src={data.imageURL} alt="image" width={400} height={400} />
+          )}
           <div className="flex justify-between text-lg text-gray-500 items-center pt-4">
             <div>
               <BiMessageRounded />

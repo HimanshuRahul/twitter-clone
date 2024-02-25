@@ -8,10 +8,17 @@ export const getAllTweetsQuery = graphql(`
             content
             imageURL
             author {
+                id
                 firstName
                 lastName
                 profileImageURL
             }
         }
     }
+`)
+
+export const getSignedURLForTweetQuery = graphql(`
+query GetSignedURL($imageName: String!, $imageType: String!) {
+    getSignedURLForTweet(imageName: $imageName, imageType: $imageType)
+  }
 `)

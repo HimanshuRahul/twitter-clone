@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import Image from "next/image";
 import { BsTwitterX } from "react-icons/bs";
 import { useCallback, useState } from "react";
@@ -18,24 +18,13 @@ import { graphqlClient } from "@/clients/api";
 import { verifyUserGoogleTokenQuery } from "@/graphql/query/user";
 import { useCurrentUser } from "@/hooks/user";
 import { useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 
 interface TwitterSidebarButton {
   title: string;
   icon: React.ReactNode;
+  link: string;
 }
-
-const sidebarMenuItems: TwitterSidebarButton[] = [
-  { title: "Home", icon: <GoHomeFill /> },
-  { title: "Explore", icon: <LuSearch /> },
-  { title: "Notifications", icon: <PiBell /> },
-  { title: "Messages", icon: <FaRegEnvelope /> },
-  { title: "Grok", icon: <RiSlashCommands2 /> },
-  { title: "Lists", icon: <TbClipboardText /> },
-  { title: "Communities", icon: <BsPeople /> },
-  { title: "Premium", icon: <BsTwitterX /> },
-  { title: "Profile", icon: <FaRegUser /> },
-  { title: "More", icon: <CgMoreO /> },
-];
 
 interface TwitterlayoutProps {
   children: React.ReactNode;
@@ -45,6 +34,22 @@ const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
   const { user } = useCurrentUser();
 
   const queryClient = useQueryClient();
+
+  const sidebarMenuItems: TwitterSidebarButton[] = useMemo(
+    () => [
+      { title: "Home", icon: <GoHomeFill />, link: "/" },
+      { title: "Explore", icon: <LuSearch />, link: "/" },
+      { title: "Notifications", icon: <PiBell />, link: "/" },
+      { title: "Messages", icon: <FaRegEnvelope />, link: "/" },
+      { title: "Grok", icon: <RiSlashCommands2 />, link: "/" },
+      { title: "Lists", icon: <TbClipboardText />, link: "/" },
+      { title: "Communities", icon: <BsPeople />, link: "/" },
+      { title: "Premium", icon: <BsTwitterX />, link: "/" },
+      { title: "Profile", icon: <FaRegUser />, link: `${user?.id}` },
+      { title: "More", icon: <CgMoreO />, link: "/" },
+    ],
+    [user?.id]
+  );
 
   const handleLoginWithGoogle = useCallback(
     async (cred: CredentialResponse) => {
@@ -80,12 +85,14 @@ const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
             <div className="text-xl">
               <ul>
                 {sidebarMenuItems.map((item) => (
-                  <li
-                    className="flex justify-start items-center gap-4 hover:bg-gray-900 rounded-full cursor-pointer py-2 pl-4 pr-8 w-fit mb-1"
-                    key={item.title}
-                  >
-                    <span className="text-3xl">{item.icon}</span>
-                    <span className="hidden sm:inline ">{item.title}</span>
+                  <li key={item.title}>
+                    <Link
+                      className="flex justify-start items-center gap-4 hover:bg-gray-900 rounded-full cursor-pointer py-2 pl-4 pr-8 w-fit mb-1"
+                      href={item.link}
+                    >
+                      <span className="text-3xl">{item.icon}</span>
+                      <span className="hidden sm:inline ">{item.title}</span>
+                    </Link>
                   </li>
                 ))}
               </ul>
