@@ -116,8 +116,9 @@ const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
                 />
               )}
               <div className="hidden sm:flex">
-                <h3 className="text-xl">{user.firstName + " "} </h3>
-                <h3 className="text-xl">{user.lastName}</h3>
+                <h3 className="text-xl">
+                  {user?.firstName} {user.lastName}
+                </h3>
               </div>
             </div>
           )}
