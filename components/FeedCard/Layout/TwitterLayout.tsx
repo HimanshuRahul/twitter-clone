@@ -127,10 +127,38 @@ const TwitterLayout: React.FC<TwitterlayoutProps> = (props) => {
           {props.children}
         </div>
         <div className="col-span-0 sm:col-span-3 p-4">
-          {!user && (
-            <div className="p-4 border rounded-lg ">
+          {!user ? (
+            <div className="p-4 bg-slate-800 rounded-lg ">
               <h1 className="my-2 text-3xl font-bold">Join today.</h1>
               <GoogleLogin onSuccess={handleLoginWithGoogle} />
+            </div>
+          ) : (
+            <div className="px-4 py-2 bg-slate-800 rounded-lg ">
+              <h1 className="my-2 text-xl font-bold mb-4">Who to follow</h1>
+              {user?.recommendedUsers?.map((el) => (
+                <div className="flex items-center gap-2 mt-2" key={el?.id}>
+                  {el?.profileImageURL && (
+                    <Image
+                      src={el?.profileImageURL}
+                      alt="user-image"
+                      className="rounded-full"
+                      width={60}
+                      height={60}
+                    />
+                  )}
+                  <div>
+                    <div className="text-lg">
+                      {el?.firstName} {el?.lastName}
+                    </div>
+                    <Link
+                      href={`${el?.id}`}
+                      className="bg-white flex text-black text-sm font-semibold px-4 py-2 mt-1 w-1/2 rounded-2xl"
+                    >
+                      View
+                    </Link>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
